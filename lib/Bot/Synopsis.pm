@@ -63,6 +63,7 @@ event irc_public => sub {
       @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
     my ($nick) = split /!/, $nickstring;
 
+    return if $message =~ /Synopsis/; # XXX
     return unless $message =~ /::.*[?]/;
     my $reply = $self->_do_it($message);
     
