@@ -19,6 +19,16 @@ sub _extract_module_name {
     return $+{module};
 }
 
+sub _filter_module {
+    my ($self, $module) = @_;
+    return "MooseX::$1"               if $module =~ /^MX::(.+)$/;
+    return "Catalyst::Model::$1"      if $module =~ /^C::M::(.+)$/;
+    return "Catalyst::View::$1"       if $module =~ /^C::V::(.+)$/;
+    return "Catalyst::Controller::$1" if $module =~ /^C::C::(.+)$/;
+    return "Catalyst::$1"             if $module =~ /^C::(.+)$/;
+    return $module;
+}
+
 sub _get_description {
     my ($self, $module) = @_;
         
@@ -45,7 +55,7 @@ sub _do_it {
     my ($self, $message) = @_;
     return eval { 
         $self->_get_description(
-            $self->_extract_module_name($message),
+            $self->_filter_module($self->_extract_module_name($message)),
         );
     } || 'syntax error';
 }
@@ -58,17 +68,17 @@ override default_owner    => sub {
     'jrockway!~jrockway@dsl092-134-178.chi1.dsl.speakeasy.net'
 };
 
-event irc_public => sub {
-    my ( $self, $irc, $nickstring, $channels, $message ) =
-      @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
-    my ($nick) = split /!/, $nickstring;
-
-    return if $message =~ /Synopsis/; # XXX
-    return unless $message =~ /::.*[?]/;
-    my $reply = $self->_do_it($message);
-    
-    $self->privmsg( $_ => $reply ) for @$channels;
-};
+#event irc_public => sub {
+#    my ( $self, $irc, $nickstring, $channels, $message ) =
+#      @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
+#    my ($nick) = split /!/, $nickstring;
+#
+#    return if $message =~ /Synopsis/; # XXX
+#    return unless $message =~ /::.*[?]/;
+#    my $reply = $self->_do_it($message);
+#    
+#    $self->privmsg( $_ => $reply ) for @$channels;
+#};
 
 event irc_bot_addressed => sub { 
     my ( $self, $irc, $nickstring, $channels, $message ) =
